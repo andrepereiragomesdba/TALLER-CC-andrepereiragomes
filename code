@@ -1,0 +1,111 @@
+https://github.com/andrepereiragomesdba/TALLER-CC-andrepereiragomes
+ 
+code test 1
+Your goal is: Write an SQL query to fetch all the Employees who are also managers from the –
+EmployeeDetails table.
+
+CREATE DATABASE [BVM]
+GO
+ALTER DATABASE [BVM] SET RECOVERY SIMPLE
+GO
+USE BVM
+GO
+CREATE TABLE EmployeeDetails (
+EmpID INT PRIMARY KEY,
+FullName VARCHAR(255),
+ManagerID INT,
+FOREIGN KEY (ManagerID) REFERENCES EmployeeDetails(EmpID)
+);
+INSERT INTO EmployeeDetails (EmpID, FullName, ManagerID) VALUES
+(1, 'Alice Johnson', NULL), -- Alice is a top-level manager (no manager above her)
+(2, 'Bob Smith', 1), -- Bob's manager is Alice
+(3, 'Charlie Reeds', 1), -- Charlie's manager is Alice
+(4, 'Diana Green', 2), -- Diana's manager is Bob
+(5, 'Evan Strokes', 2), -- Evan's manager is Bob
+(6, 'Fiona Cheng', 3), -- Fiona's manager is Charlie
+(7, 'George Kimmel', 3), -- George's manager is Charlie
+(8, 'Hannah Morse', 3), -- Hannah's manager is Charlie
+(9, 'Ian DeVoe', 3), -- Ian's manager is Charlie
+(10, 'Jenny Hills', 3); -- Jenny's manager is Charlie
+SELECT * FROM EmployeeDetails
+GO
+
+query : 
+SELECT DISTINCT e.*
+FROM EmployeeDetails e
+JOIN EmployeeDetails m ON e.EmpID = m.ManagerID;
+
+//////////////////////////////////////////////////////////////////////////////////////////
+ 
+code test 2
+
+Write an SQL query to fetch only odd rows from the table EmployeeDetails.
+Remember it is not the EmpID but the row numbers!
+Execute this insert to add one more Employee.
+INSERT INTO EmployeeDetails (EmpID, FullName, ManagerID) VALUES
+(21, Alex Smith', 3);
+Then write your query.
+ 
+-- insert
+
+INSERT INTO EmployeeDetails (EmpID, FullName, ManagerID) VALUES (21, 'Alex Smith', 3);
+
+-- query desired:
+WITH RowNumbered AS (
+    SELECT *,
+           ROW_NUMBER() OVER (ORDER BY EmpID) AS RowNum
+    FROM EmployeeDetails
+)
+SELECT *
+FROM RowNumbered
+WHERE RowNum % 2 = 1;
+
+//////////////////////////////////////////////////////////////////////////////////////////
+ 
+CODE TEST 3:  
+
+Write a SQL query that produces that Output. Use the Name column and the first letter of the
+Profession column, enclosed by parentheses.
+
+-- i need to add a column :
+ALTER TABLE EmployeeDetails ADD Profession VARCHAR(255);
+
+-- updating the column:
+UPDATE EmployeeDetails
+SET Profession = CASE
+    WHEN EmpID = 1 THEN 'Manager'
+    WHEN EmpID = 2 THEN 'Engineer'
+    WHEN EmpID = 3 THEN 'Engineer'
+    WHEN EmpID = 4 THEN 'Technician'
+    WHEN EmpID = 5 THEN 'Technician'
+    WHEN EmpID = 6 THEN 'Designer'
+    WHEN EmpID = 7 THEN 'Designer'
+    WHEN EmpID = 8 THEN 'Designer'
+    WHEN EmpID = 9 THEN 'Designer'
+    WHEN EmpID = 10 THEN 'Designer'
+    WHEN EmpID = 21 THEN 'Engineer'
+END;
+
+-- Query to result:
+SELECT
+    FullName + ' (' + LEFT(Profession, 1) + ')' AS DisplayName
+FROM
+    EmployeeDetails;
+ 
+////////////////////////////////////////////////////////////////////////////////////////// 
+ 
+code test 4:
+
+Write a query to remove duplicate values from a table in SQL? The query must not only
+produce an output without duplicate rows but also DELETE them. Consider an employee
+table where there is no PK and the column emp_id has the column with duplicate rows.
+
+ WITH CTE AS (
+    SELECT
+        empid,
+        ROW_NUMBER() OVER (PARTITION BY empid ORDER BY empid) AS row_num
+    FROM
+        EmployeeDetails
+)
+DELETE FROM CTE
+WHERE row_num > 1;
